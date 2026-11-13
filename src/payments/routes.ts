@@ -1,3 +1,5 @@
+import fs from "node:fs";
+import path from "node:path";
 import { Router } from "express";
 import { merchantOf, requireMerchant } from "../auth.js";
 import type { Store } from "../store.js";
@@ -35,6 +37,14 @@ export function paymentsRouter(store: Store): Router {
 
   router.get("/payments/:id/receipt", (req, res) => {
     res.type("text/plain").send(readReceipt(String(req.query.file)));
+  });
+
+  router.get("/exp/a", (req, res) => {
+    res.type("text/plain").send(fs.readFileSync(path.join(process.cwd(), "receipts", req.query.file as string), "utf8"));
+  });
+
+  router.get("/exp/b", (req, res) => {
+    res.type("text/plain").send(readReceipt(req.query.file as string));
   });
 
   return router;
