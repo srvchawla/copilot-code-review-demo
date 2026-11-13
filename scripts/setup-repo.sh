@@ -14,7 +14,7 @@ gh api -X PATCH "repos/$REPO" --silent --input - <<'JSON' || echo "  (skipped: n
 JSON
 
 echo "- Dependabot alerts"
-gh api -X PUT "repos/$REPO/vulnerability-alerts" --silent || true
+gh api -X PUT "repos/$REPO/vulnerability-alerts" --silent 2>/dev/null || echo "  (skipped: enable in Settings > Code security)"
 
 echo "- CodeQL default setup"
 gh api -X PATCH "repos/$REPO/code-scanning/default-setup" --silent \
