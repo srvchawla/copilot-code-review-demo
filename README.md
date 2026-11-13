@@ -58,7 +58,8 @@ The repository instructions encode this team's standards, such as integer money,
 3. In **Settings > Copilot > Code review**, pick the default review effort. **Balanced** is the built-in default.
 4. Optional: enable **Copilot approvals**, and add an MCP server under **Settings > Copilot > Cloud agent** (used by both the cloud agent and code review).
 5. Replace `@srvchawla` in `.github/CODEOWNERS` with a team of participants. Authors can't approve their own pull requests, so pairs should review each other's.
-6. Open one scenario pull request ahead of time to warm up Actions runners.
+6. Run `scripts/verify-repo.sh` and fix anything it reports. Provision at least a day early: in a brand-new repo, Actions can take a while to start running the repo's own workflows.
+7. Copilot took about 10 minutes to review each defect-heavy scenario in rehearsal. Open the live pull request at the start of the session, not when you reach the demo.
 
 ## Demo flow (15–25 min)
 

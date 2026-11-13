@@ -17,8 +17,15 @@ echo "- Dependabot alerts"
 gh api -X PUT "repos/$REPO/vulnerability-alerts" --silent 2>/dev/null || echo "  (skipped: enable in Settings > Code security)"
 
 echo "- CodeQL default setup"
+# GitHub detects repository languages asynchronously after the first push. Configuring
+# CodeQL before TypeScript is detected silently limits it to GitHub Actions workflows.
+for _ in $(seq 1 30); do
+  gh api "repos/$REPO/languages" -q 'has("TypeScript")' 2>/dev/null | grep -q true && break
+  sleep 10
+done
 gh api -X PATCH "repos/$REPO/code-scanning/default-setup" --silent \
   -f state=configured -f query_suite=default \
+  -f 'languages[]=javascript-typescript' -f 'languages[]=actions' \
   || echo "  (skipped: needs a public repo or GitHub Code Security)"
 
 for file in .github/rulesets/*.json; do

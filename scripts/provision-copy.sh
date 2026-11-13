@@ -26,5 +26,7 @@ git --git-dir="$WORKDIR/src.git" push --quiet "https://github.com/$TARGET.git" \
 gh repo edit "$TARGET" --default-branch main --delete-branch-on-merge
 (cd "$WORKDIR" && git clone --quiet "https://github.com/$TARGET.git" copy && cd copy && scripts/setup-repo.sh "$TARGET")
 
+
 echo "Provisioned https://github.com/$TARGET"
 echo "Next: update .github/CODEOWNERS, add participants, and confirm Copilot code review is enabled for the org."
+echo "Provision at least a day early, then run scripts/verify-repo.sh $TARGET before opening scenario pull requests."
