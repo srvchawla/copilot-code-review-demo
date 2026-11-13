@@ -71,4 +71,46 @@ describe("payments API", () => {
     const res = await request(app).get(`/v1/payments/${created.body.id}`).set(OTHER_MERCHANT);
     expect(res.status).toBe(404);
   });
+
+  it("rejects malformed JSON with 400 instead of 500", async () => {
+    const res = await request(app)
+      .post("/v1/payments")
+      .set(MERCHANT)
+      .set("content-type", "application/json")
+      .send("{not json");
+    expect(res.status).toBe(400);
+  });
+
+  describe("capture idempotency", () => {
+    async function authorize(headers = MERCHANT) {
+      const created = await request(app).post("/v1/payments").set(headers).send(validPayment);
+      return created.body.id as string;
+    }
+
+    it("replays the original response for a retried Idempotency-Key", async () => {
+      const id = await authorize();
+      const first = await request(app).post(`/v1/payments/${id}/capture`).set(MERCHANT).set("idempotency-key", "k1").send({});
+      const retry = await request(app).post(`/v1/payments/${id}/capture`).set(MERCHANT).set("idempotency-key", "k1").send({});
+      expect(first.status).toBe(200);
+      expect(retry.status).toBe(200);
+      expect(retry.body).toEqual(first.body);
+      expect(store.balances.get("m_acme:USD")).toBe(10_000);
+    });
+
+    it("rejects a reused key with a different request body", async () => {
+      const id = await authorize();
+      await request(app).post(`/v1/payments/${id}/capture`).set(MERCHANT).set("idempotency-key", "k1").send({ amountMinor: 5_000 });
+      const res = await request(app).post(`/v1/payments/${id}/capture`).set(MERCHANT).set("idempotency-key", "k1").send({ amountMinor: 6_000 });
+      expect(res.status).toBe(409);
+    });
+
+    it("scopes keys per merchant", async () => {
+      const acmePayment = await authorize(MERCHANT);
+      const globexPayment = await authorize(OTHER_MERCHANT);
+      await request(app).post(`/v1/payments/${acmePayment}/capture`).set(MERCHANT).set("idempotency-key", "shared").send({});
+      const res = await request(app).post(`/v1/payments/${globexPayment}/capture`).set(OTHER_MERCHANT).set("idempotency-key", "shared").send({});
+      expect(res.status).toBe(200);
+      expect(res.body.id).toBe(globexPayment);
+    });
+  });
 });

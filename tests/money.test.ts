@@ -18,6 +18,11 @@ describe("money", () => {
     expect(applyBasisPoints(money(-5, "USD"), 1_000).amountMinor).toBe(-1);
   });
 
+  it("keeps precision for amounts near Number.MAX_SAFE_INTEGER", () => {
+    // 9007199254740948 * 290 / 10000 = 261208778387487.492 -> 261208778387487
+    expect(applyBasisPoints(money(9_007_199_254_740_948, "USD"), 290).amountMinor).toBe(261_208_778_387_487);
+  });
+
   it("formats zero-decimal and two-decimal currencies", () => {
     expect(formatMoney(money(1_234, "USD"))).toBe("12.34 USD");
     expect(formatMoney(money(5, "EUR"))).toBe("0.05 EUR");

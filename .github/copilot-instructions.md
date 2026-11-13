@@ -23,7 +23,7 @@ Skip purely cosmetic comments (formatting, import order, quote style). Prettier 
 
 - Every route under `/v1` runs `requireMerchant`. Load resources through a merchant-scoped helper (for example `getPaymentForMerchant`) and return 404, not 403, for other merchants' resources.
 - Validate request bodies at the boundary and return `400 invalid_request` through the helpers in `src/errors.ts`.
-- Mutating money endpoints (capture, refund, payout) must honor the `Idempotency-Key` header.
+- Mutating money endpoints (capture, refund, payout) must honor the `Idempotency-Key` header through `withIdempotency` in `src/idempotency.ts`.
 - Never return or log full card numbers, CVV, or customer email. Use `logger`, which redacts known keys, and log IDs rather than whole objects.
 
 ## Tests

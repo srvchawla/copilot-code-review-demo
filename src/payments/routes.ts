@@ -1,5 +1,6 @@
 import { Router } from "express";
 import { merchantOf, requireMerchant } from "../auth.js";
+import { withIdempotency } from "../idempotency.js";
 import type { Store } from "../store.js";
 import {
   capturePayment,
@@ -23,8 +24,16 @@ export function paymentsRouter(store: Store): Router {
   });
 
   router.post("/payments/:id/capture", (req, res) => {
-    const payment = capturePayment(store, merchantOf(req), req.params.id, req.body?.amountMinor);
-    res.json(toPaymentResponse(payment));
+    const merchantId = merchantOf(req);
+    const response = withIdempotency(
+      store,
+      merchantId,
+      `capture:${req.params.id}`,
+      req.header("idempotency-key"),
+      req.body,
+      () => toPaymentResponse(capturePayment(store, merchantId, req.params.id, req.body?.amountMinor)),
+    );
+    res.json(response);
   });
 
   return router;

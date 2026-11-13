@@ -19,6 +19,15 @@ export function createApp(store = new Store()) {
       res.status(err.status).json({ error: { code: err.code, message: err.message } });
       return;
     }
+    const bodyParserType = (err as { type?: string } | null)?.type;
+    if (bodyParserType === "entity.parse.failed") {
+      res.status(400).json({ error: { code: "invalid_request", message: "request body is not valid JSON" } });
+      return;
+    }
+    if (bodyParserType === "entity.too.large") {
+      res.status(413).json({ error: { code: "payload_too_large", message: "request body is too large" } });
+      return;
+    }
     logger.warn("unhandled_error", { message: err instanceof Error ? err.message : String(err) });
     res.status(500).json({ error: { code: "internal_error", message: "unexpected error" } });
   });

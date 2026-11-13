@@ -27,7 +27,7 @@ Fix the blocking findings. Use any mix of:
 - Copilot Chat or agent mode in your IDE
 - Handing the finding to Copilot cloud agent from the review comment
 
-Reply to every Copilot comment you do not act on, with the reason. Unresolved threads block merge.
+Reply to every Copilot comment you do not act on, with the reason, then click **Resolve conversation**. Replying alone doesn't resolve a thread, and unresolved threads block merge.
 
 ## 3. Add tests (7 min)
 

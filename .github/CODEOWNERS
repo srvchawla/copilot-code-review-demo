@@ -1,4 +1,5 @@
 # Human ownership is the final quality gate. Copilot review is advisory.
+# Replace these owners with a team of participants. Authors cannot approve their own pull requests.
 *                     @srvchawla
 /src/payments/        @srvchawla
 /.github/             @srvchawla

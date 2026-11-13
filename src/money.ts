@@ -52,9 +52,10 @@ export function applyBasisPoints(m: Money, basisPoints: number): Money {
   if (!Number.isSafeInteger(basisPoints)) {
     throw new MoneyError("basisPoints must be an integer");
   }
-  const product = m.amountMinor * basisPoints;
-  const rounded = Math.sign(product) * Math.floor((Math.abs(product) + 5_000) / 10_000);
-  return money(rounded, m.currency);
+  const product = BigInt(m.amountMinor) * BigInt(basisPoints);
+  const magnitude = product < 0n ? -product : product;
+  const roundedMagnitude = (magnitude + 5_000n) / 10_000n;
+  return money(Number(product < 0n ? -roundedMagnitude : roundedMagnitude), m.currency);
 }
 
 /** Display-only decimal string, e.g. "12.34 USD". Never parse this back into a Money. */
