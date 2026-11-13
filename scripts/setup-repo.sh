@@ -19,14 +19,21 @@ gh api -X PUT "repos/$REPO/vulnerability-alerts" --silent 2>/dev/null || echo " 
 echo "- CodeQL default setup"
 # GitHub detects repository languages asynchronously after the first push. Configuring
 # CodeQL before TypeScript is detected silently limits it to GitHub Actions workflows.
+detected=false
 for _ in $(seq 1 30); do
-  gh api "repos/$REPO/languages" -q 'has("TypeScript")' 2>/dev/null | grep -q true && break
+  if [[ "$(gh api "repos/$REPO/languages" -q 'has("TypeScript")' 2>/dev/null)" == true ]]; then
+    detected=true; break
+  fi
   sleep 10
 done
-gh api -X PATCH "repos/$REPO/code-scanning/default-setup" --silent \
-  -f state=configured -f query_suite=default \
-  -f 'languages[]=javascript-typescript' -f 'languages[]=actions' \
-  || echo "  (skipped: needs a public repo or GitHub Code Security)"
+if $detected; then
+  gh api -X PATCH "repos/$REPO/code-scanning/default-setup" --silent \
+    -f state=configured -f query_suite=default \
+    -f 'languages[]=javascript-typescript' -f 'languages[]=actions' \
+    || echo "  (skipped: needs a public repo or GitHub Code Security)"
+else
+  echo "  (skipped: TypeScript not detected yet. Rerun scripts/setup-repo.sh $REPO in a few minutes)"
+fi
 
 for file in .github/rulesets/*.json; do
   name="$(jq -r .name "$file")"
