@@ -4,7 +4,7 @@
 # Do not use "Use this template": template copies have unrelated branch histories,
 # so scenario branches cannot be opened as pull requests against main.
 #
-# Usage: scripts/provision-copy.sh <owner/new-repo> [--internal|--private]
+# Usage: scripts/provision-copy.sh <owner/new-repo> [--internal|--private|--public]
 set -euo pipefail
 
 TARGET="${1:?target required, e.g. my-org/copilot-code-review-demo}"
@@ -13,10 +13,14 @@ SOURCE_URL="$(git remote get-url origin)"
 WORKDIR="$(mktemp -d)"
 trap 'rm -rf "$WORKDIR"' EXIT
 
-gh repo create "$TARGET" "$VISIBILITY" --description "Copilot code review workshop (OctoPay demo)"
+if gh repo view "$TARGET" >/dev/null 2>&1; then
+  echo "$TARGET already exists; pushing branches into it."
+else
+  gh repo create "$TARGET" "$VISIBILITY" --description "Copilot code review workshop (OctoPay demo)"
+fi
 
 git clone --quiet --bare "$SOURCE_URL" "$WORKDIR/src.git"
-git -C "$WORKDIR/src.git" push --quiet "https://github.com/$TARGET.git" \
+git --git-dir="$WORKDIR/src.git" push --quiet "https://github.com/$TARGET.git" \
   "refs/heads/main:refs/heads/main" "refs/heads/scenario/*:refs/heads/scenario/*"
 
 gh repo edit "$TARGET" --default-branch main --delete-branch-on-merge
