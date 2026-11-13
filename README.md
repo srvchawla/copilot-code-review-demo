@@ -49,6 +49,10 @@ The repository instructions encode this team's standards, such as integer money,
    ```bash
    scripts/provision-copy.sh my-org/copilot-code-review-demo --internal
    ```
+   Then work from the new copy, so later commands push to it rather than to this repo:
+   ```bash
+   gh repo clone my-org/copilot-code-review-demo && cd copilot-code-review-demo
+   ```
    Don't use **Use this template**: template copies have unrelated branch histories, so the scenario branches can't be opened as pull requests. Managed (EMU) accounts can't fork this public repo either, so the facilitator should provision the copy for them.
 2. The provisioning script runs `scripts/setup-repo.sh`. It turns on secret scanning, push protection, Dependabot alerts, and CodeQL default setup, then imports both rulesets. In a private or internal repo, CodeQL and secret scanning need GitHub Code Security and Secret Protection.
 3. In **Settings > Copilot > Code review**, pick the default review effort. **Balanced** is the built-in default.

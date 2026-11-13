@@ -104,13 +104,11 @@ describe("payments API", () => {
       expect(res.status).toBe(409);
     });
 
-    it("scopes keys per merchant", async () => {
-      const acmePayment = await authorize(MERCHANT);
-      const globexPayment = await authorize(OTHER_MERCHANT);
-      await request(app).post(`/v1/payments/${acmePayment}/capture`).set(MERCHANT).set("idempotency-key", "shared").send({});
-      const res = await request(app).post(`/v1/payments/${globexPayment}/capture`).set(OTHER_MERCHANT).set("idempotency-key", "shared").send({});
-      expect(res.status).toBe(200);
-      expect(res.body.id).toBe(globexPayment);
+    it("does not replay one merchant's cached capture to another merchant", async () => {
+      const id = await authorize(MERCHANT);
+      await request(app).post(`/v1/payments/${id}/capture`).set(MERCHANT).set("idempotency-key", "shared").send({});
+      const res = await request(app).post(`/v1/payments/${id}/capture`).set(OTHER_MERCHANT).set("idempotency-key", "shared").send({});
+      expect(res.status).toBe(404);
     });
   });
 });
